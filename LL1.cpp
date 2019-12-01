@@ -44,7 +44,7 @@ struct FirstSet
 
 void insertSymbol(const Symbol &s, std::vector<Symbol> &result)
 {
-	if (std::find_if(result.begin(), result.end(), // NOTE: pretty much only for epsilon copies
+	if (std::find_if(result.begin(), result.end(),
 		[&s](const Symbol &a) {return a.kind == s.kind; }) == result.end())
 	{
 		result.push_back(s);
