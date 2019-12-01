@@ -7,8 +7,6 @@
 #include <assert.h>
 #include <stack>
 
-// TODO: A lot of string comparisons -> add string interning
-// TODO: First and Follow do duplications, fix that (for now, we use std::find_if)
 // TODO: make map from std::vector<RegularExpr>
 
 enum SymbolType
