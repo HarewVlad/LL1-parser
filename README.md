@@ -1,3 +1,3 @@
 # LL1-parser
 
-![](rayTracer.gif)
+![](test.gif)
