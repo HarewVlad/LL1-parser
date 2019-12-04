@@ -51,7 +51,8 @@ void insertSymbol(const Symbol &s, std::vector<Symbol> &result)
 
 bool findSymbol(const Symbol &s, const std::vector<Symbol> symbols)
 {
-	if (std::find_if(symbols.begin(), symbols.end(), [&s](const Symbol &a) {return a.kind == s.kind; }) != symbols.end())
+	if (std::find_if(symbols.begin(), symbols.end(), 
+		[&s](const Symbol &a) {return a.kind == s.kind; }) != symbols.end())
 	{
 		return true;
 	}
