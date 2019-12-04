@@ -283,51 +283,6 @@ RegularExpr parseRE(const std::string &line)
 	return RegularExpr{ Symbol{ NT, nt }, right, hasEpsilon };
 }
 
-void dumpRegularExpressions()
-{
-	for (int i = 0; i < regularExpressions.size(); i++)
-	{
-		std::cout << regularExpressions[i].left.kind << " -> ";
-		for (int j = 0; j < regularExpressions[i].right.size(); j++)
-		{
-			for (int k = 0; k < regularExpressions[i].right[j].size(); k++)
-			{
-				std::cout << regularExpressions[i].right[j][k].kind << ' ';
-			}
-			if (j != regularExpressions[i].right.size() - 1)
-			{
-				std::cout << "| ";
-			}
-		}
-		std::cout << '\n';
-	}
-	std::cout << '\n';
-}
-
-void initRegularExpr()
-{
-	std::cout << "Enter regular expressions: (type 'exit' to stop)\n";
-
-	std::string input = {};
-	while (std::getline(std::cin, input) && input != "exit")
-	{
-		RegularExpr re = parseRE(input);
-		regularExpressions.push_back(re);
-	};
-
-	dumpRegularExpressions();
-
-	std::cout << "Enter start nonterminal: ( ";
-	for (int i = 0; i < regularExpressions.size(); i++)
-	{
-		std::cout << regularExpressions[i].left.kind << ' ';
-	}
-	std::cout << ")\n";
-
-	std::cin >> input;
-	startNT = { NT, input };
-}
-
 int findRegularExpr(const Symbol &s)
 {
 	for (int i = 0; i < regularExpressions.size(); i++)
@@ -398,151 +353,202 @@ int findFollowSet(const std::vector<FollowSet> &followSets, const Symbol &s)
 int main()
 {
 	// Init regular expressions
-	initRegularExpr();
+	{
+		std::cout << "Enter regular expressions: (type 'exit' to stop)\n";
+
+		std::string input = {};
+		while (std::getline(std::cin, input) && input != "exit")
+		{
+			RegularExpr re = parseRE(input);
+			regularExpressions.push_back(re);
+		};
+
+		// Print
+		std::cout << "--Regular expressions:\n";
+		for (int i = 0; i < regularExpressions.size(); i++)
+		{
+			std::cout << regularExpressions[i].left.kind << " -> ";
+			for (int j = 0; j < regularExpressions[i].right.size(); j++)
+			{
+				for (int k = 0; k < regularExpressions[i].right[j].size(); k++)
+				{
+					std::cout << regularExpressions[i].right[j][k].kind << ' ';
+				}
+				if (j != regularExpressions[i].right.size() - 1)
+				{
+					std::cout << "| ";
+				}
+			}
+			std::cout << '\n';
+		}
+		std::cout << '\n';
+
+		std::cout << "Enter start nonterminal: ( ";
+		for (int i = 0; i < regularExpressions.size(); i++)
+		{
+			std::cout << regularExpressions[i].left.kind << ' ';
+		}
+		std::cout << ")\n";
+
+		std::cin >> input;
+		startNT = { NT, input };
+	}
 
 	// First sets
 	std::vector<FirstSet> firstSets = {};
-	for (int i = 0; i < regularExpressions.size(); i++)
 	{
-		std::vector<std::vector<Symbol>> firstSet = {};
-		first(regularExpressions[i].left, firstSet);
-		firstSets.emplace_back(FirstSet{ regularExpressions[i].left, firstSet });
-	}
-
-	std::cout << "First: \n";
-	for (auto i : firstSets)
-	{
-		std::cout << i.left.kind << ": {";
-		for (auto j : i.right)
+		for (int i = 0; i < regularExpressions.size(); i++)
 		{
-			std::cout << " { ";
-			for (auto k : j)
-			{
-				std::cout << k.kind << ' ';
-			}
-			std::cout << "}";
+			std::vector<std::vector<Symbol>> firstSet = {};
+			first(regularExpressions[i].left, firstSet);
+			firstSets.emplace_back(FirstSet{ regularExpressions[i].left, firstSet });
 		}
-		std::cout << " }\n";
+
+		// Print
+		std::cout << "--First: \n";
+		for (auto i : firstSets)
+		{
+			std::cout << i.left.kind << ": {";
+			for (auto j : i.right)
+			{
+				std::cout << " { ";
+				for (auto k : j)
+				{
+					std::cout << k.kind << ' ';
+				}
+				std::cout << "}";
+			}
+			std::cout << " }\n";
+		}
 	}
 
 	// Follow sets
 	std::vector<FollowSet> followSets = {};
-	for (int i = 0; i < regularExpressions.size(); i++)
 	{
-		std::vector<Symbol> followSet = {};
-		follow(regularExpressions[i].left, followSet);
-		followSets.emplace_back(FollowSet{ regularExpressions[i].left, followSet });
-	}
-
-	std::cout << "Follow: \n";
-	for (auto i : followSets)
-	{
-		std::cout << i.left.kind << ": { ";
-		for (auto j : i.right)
+		for (int i = 0; i < regularExpressions.size(); i++)
 		{
-			if (j.kind == "")
-			{
-				std::cout << "$" << ' ';
-			}
-			else
-			{
-				std::cout << j.kind << ' ';
-			}
+			std::vector<Symbol> followSet = {};
+			follow(regularExpressions[i].left, followSet);
+			followSets.emplace_back(FollowSet{ regularExpressions[i].left, followSet });
 		}
-		std::cout << "}\n";
-	}
 
-	// Creating parsing table 
-	std::map<std::string, std::map<std::string, std::vector<Symbol>>> parsingTable = {};
-	for (int numSet = 0; numSet < firstSets.size(); numSet++)
-	{
-		int regularExprIndex = findRegularExpr(firstSets[numSet].left);
-		assert(regularExprIndex != -1);
-
-		for (int numRight = 0; numRight < firstSets[numSet].right.size(); numRight++)
+		// Print
+		std::cout << "--Follow: \n";
+		for (auto i : followSets)
 		{
-			for (int numSymFirst = 0; numSymFirst < firstSets[numSet].right[numRight].size(); numSymFirst++)
+			std::cout << i.left.kind << ": { ";
+			for (auto j : i.right)
 			{
-				if (firstSets[numSet].right[numRight][numSymFirst].kind != "epsilon")
-				{
-					std::string nt = firstSets[numSet].left.kind;
-					std::string t = firstSets[numSet].right[numRight][numSymFirst].kind;
-
-					parsingTable[nt][t] = regularExpressions[regularExprIndex].right[numRight];
-				}
-				else
-				{
-					int followSetIndex = findFollowSet(followSets, firstSets[numSet].left);
-					assert(followSetIndex != -1);
-
-					for (int numSymFollow = 0; numSymFollow < followSets[followSetIndex].right.size(); numSymFollow++)
-					{
-						std::string nt = followSets[followSetIndex].left.kind;
-						std::string t = followSets[followSetIndex].right[numSymFollow].kind;
-
-						parsingTable[nt][t] = regularExpressions[regularExprIndex].right[numRight];
-					}
-				}
-			}
-		}
-	}
-
-	std::cout << "Parsing table: \n";
-	for (auto i : parsingTable)
-	{
-		std::cout << i.first << ": { ";
-		for (auto j : i.second)
-		{
-			if (j.first == "")
-			{
-				std::cout << "$" << ' ';
-			}
-			else
-			{
-				std::cout << j.first << ' ';
-			}
-		}
-		std::cout << "} -> ";
-		for (auto j : i.second)
-		{
-			std::cout << "{ ";
-			for (auto k : j.second)
-			{
-				if (k.kind == "")
+				if (j.kind == "")
 				{
 					std::cout << "$" << ' ';
 				}
 				else
 				{
-					std::cout << k.kind << ' ';
+					std::cout << j.kind << ' ';
 				}
 			}
-			std::cout << "} ";
+			std::cout << "}\n";
 		}
-		std::cout << "}\n";
 	}
 
-	// Parsing
-	std::cout << "Parsing:\nEnter strings to parse: (type 'exit' to stop)\n";
-
-	std::string src = {};
-	while (std::getline(std::cin, src) && src != "exit")
+	// Creating parsing table 
+	std::map<std::string, std::map<std::string, std::vector<Symbol>>> parsingTable = {};
 	{
-		if (src != "")
+		for (int numSet = 0; numSet < firstSets.size(); numSet++)
 		{
-			// Stack initialization
-			stack.push(Symbol{ T, "\0" });
-			stack.push(startNT);
+			int regularExprIndex = findRegularExpr(firstSets[numSet].left);
+			assert(regularExprIndex != -1);
 
-			if (parseInput(src, parsingTable) == 0)
+			for (int numRight = 0; numRight < firstSets[numSet].right.size(); numRight++)
 			{
-				std::cout << "Parsed successfully\n";
+				for (int numSymFirst = 0; numSymFirst < firstSets[numSet].right[numRight].size(); numSymFirst++)
+				{
+					if (firstSets[numSet].right[numRight][numSymFirst].kind != "epsilon")
+					{
+						std::string nt = firstSets[numSet].left.kind;
+						std::string t = firstSets[numSet].right[numRight][numSymFirst].kind;
+
+						parsingTable[nt][t] = regularExpressions[regularExprIndex].right[numRight];
+					}
+					else
+					{
+						int followSetIndex = findFollowSet(followSets, firstSets[numSet].left);
+						assert(followSetIndex != -1);
+
+						for (int numSymFollow = 0; numSymFollow < followSets[followSetIndex].right.size(); numSymFollow++)
+						{
+							std::string nt = followSets[followSetIndex].left.kind;
+							std::string t = followSets[followSetIndex].right[numSymFollow].kind;
+
+							parsingTable[nt][t] = regularExpressions[regularExprIndex].right[numRight];
+						}
+					}
+				}
 			}
-			else
+		}
+
+		// Print
+		std::cout << "--Parsing table: \n";
+		for (auto i : parsingTable)
+		{
+			std::cout << i.first << ": { ";
+			for (auto j : i.second)
 			{
-				// Clean the stack
-				stack = std::stack<Symbol>();
+				if (j.first == "")
+				{
+					std::cout << "$" << ' ';
+				}
+				else
+				{
+					std::cout << j.first << ' ';
+				}
+			}
+			std::cout << "} -> ";
+			for (auto j : i.second)
+			{
+				std::cout << "{ ";
+				for (auto k : j.second)
+				{
+					if (k.kind == "")
+					{
+						std::cout << "$" << ' ';
+					}
+					else
+					{
+						std::cout << k.kind << ' ';
+					}
+				}
+				std::cout << "} ";
+			}
+			std::cout << "}\n";
+		}
+	}
+	
+	// Parsing
+	{
+		std::cout << "Parsing:\nEnter strings to parse: (type 'exit' to stop)\n";
+
+		std::string src = {};
+		while (std::getline(std::cin, src) && src != "exit")
+		{
+			if (src != "")
+			{
+				// Stack initialization
+				stack.push(Symbol{ T, "\0" });
+				stack.push(startNT);
+
+				if (parseInput(src, parsingTable) == 0)
+				{
+					std::cout << "Parsed successfully\n";
+				}
+				else
+				{
+					// Clean the stack
+					stack = std::stack<Symbol>();
+				}
 			}
 		}
 	}
+	
 }
