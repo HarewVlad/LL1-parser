@@ -3,7 +3,7 @@
 Format:  
 NT -> 'type' 'name' ...  
 Ex:  
-S -> NT F SPECIAL | T e  
-S -> F | e
+S -> NT F SPECIAL | T epsilon  
+S -> F | epsilon
 
 ![](test.gif)
