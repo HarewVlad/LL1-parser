@@ -1,8 +1,8 @@
 # LL1-parser
 
-Format:  
+**Format:**  
 NT -> 'type' 'name' ...  
-Ex:  
+**Ex:**  
 "S -> NT F SPECIAL | T epsilon" --- "S -> F | epsilon"
 
 ![](test.gif)
