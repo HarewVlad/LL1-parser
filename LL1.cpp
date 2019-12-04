@@ -7,8 +7,6 @@
 #include <assert.h>
 #include <stack>
 
-// TODO: make map from std::vector<RegularExpr>
-
 enum SymbolType
 {
 	NONE,
@@ -82,7 +80,7 @@ void firstA(const std::vector<Symbol> &block, std::vector<Symbol> &result)
 	{
 		if (block[i].type == T)
 		{
-			insertSymbol(block[i], result);
+			result.push_back(block[i]);
 			return;
 		}
 		else
@@ -142,13 +140,13 @@ void followE(const Symbol &left, const std::vector<Symbol> &right, int pos, std:
 		else
 		{
 			std::vector<std::vector<Symbol>> firstSet = {};
-			first(right[pos + 1], firstSet); // TODO: Use already calculated first sets for speed
+			first(right[pos + 1], firstSet);
 
 			bool hasEpsilon = false;
 			for (int i = 0; i < firstSet.size(); i++)
 			{
 				if (std::find_if(firstSet[i].begin(), firstSet[i].end(),
-					[](const Symbol &a) {return a.kind == "e"; }) != firstSet[i].end())
+					[](const Symbol &a) {return a.kind == "epsilon"; }) != firstSet[i].end())
 				{
 					hasEpsilon = true;
 					break;
@@ -159,7 +157,7 @@ void followE(const Symbol &left, const std::vector<Symbol> &right, int pos, std:
 			{
 				for (int j = 0; j < firstSet[i].size(); j++)
 				{
-					if (firstSet[i][j].kind != "e" && !findSymbol(firstSet[i][j], result))
+					if (firstSet[i][j].kind != "epsilon" && !findSymbol(firstSet[i][j], result))
 					{
 						insertSymbol(firstSet[i][j], result);
 					}
@@ -183,7 +181,7 @@ void follow(const Symbol &s, std::vector<Symbol> &result)
 {
 	if (s.kind == startNT.kind)
 	{
-		insertSymbol(Symbol{ T, "$" }, result);
+		insertSymbol(Symbol{ T, "" }, result);
 	}
 
 	for (int i = 0; i < regularExpressions.size(); i++)
@@ -262,9 +260,10 @@ RegularExpr parseRE(const std::string &line)
 	while (*p != '\0')
 	{
 		std::string type = next(&p);
+		assert(type == "NT" || type == "T" || type == "SPECIAL");
 		std::string kind = next(&p);
 
-		if (kind == "e")
+		if (kind == "epsilon")
 		{
 			hasEpsilon = true;
 		}
@@ -367,7 +366,10 @@ int parseInput(const std::string &s, std::map<std::string, std::map<std::string,
 
 				for (int i = production.size() - 1; i >= 0; i--)
 				{
-					stack.push(production[i]);
+					if (production[i].kind != "epsilon") // TODO: change later
+					{
+						stack.push(production[i]);
+					}
 				}
 			}
 			else
@@ -379,6 +381,18 @@ int parseInput(const std::string &s, std::map<std::string, std::map<std::string,
 	}
 
 	return 0;
+}
+
+int findFollowSet(const std::vector<FollowSet> &followSets, const Symbol &s)
+{
+	for (int i = 0; i < followSets.size(); i++)
+	{
+		if (followSets[i].left.kind == s.kind)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
 int main()
@@ -426,27 +440,49 @@ int main()
 		std::cout << i.left.kind << ": { ";
 		for (auto j : i.right)
 		{
-			std::cout << j.kind << ' ';
+			if (j.kind == "")
+			{
+				std::cout << "$" << ' ';
+			}
+			else
+			{
+				std::cout << j.kind << ' ';
+			}
 		}
 		std::cout << "}\n";
 	}
 
 	// Creating parsing table 
-	// TODO: add second rule
 	std::map<std::string, std::map<std::string, std::vector<Symbol>>> parsingTable = {};
-	for (int i = 0; i < firstSets.size(); i++)
+	for (int numSet = 0; numSet < firstSets.size(); numSet++)
 	{
-		for (int j = 0; j < firstSets[i].right.size(); j++)
+		int regularExprIndex = findRegularExpr(firstSets[numSet].left);
+		assert(regularExprIndex != -1);
+
+		for (int numRight = 0; numRight < firstSets[numSet].right.size(); numRight++)
 		{
-			for (int k = 0; k < firstSets[i].right[j].size(); k++)
+			for (int numSymFirst = 0; numSymFirst < firstSets[numSet].right[numRight].size(); numSymFirst++)
 			{
-				int index = findRegularExpr(firstSets[i].left);
-				assert(index != -1);
+				if (firstSets[numSet].right[numRight][numSymFirst].kind != "epsilon")
+				{
+					std::string nt = firstSets[numSet].left.kind;
+					std::string t = firstSets[numSet].right[numRight][numSymFirst].kind;
 
-				std::string nt = firstSets[i].left.kind;
-				std::string t = firstSets[i].right[j][k].kind;
+					parsingTable[nt][t] = regularExpressions[regularExprIndex].right[numRight];
+				}
+				else
+				{
+					int followSetIndex = findFollowSet(followSets, firstSets[numSet].left);
+					assert(followSetIndex != -1);
 
-				parsingTable[nt][t] = regularExpressions[index].right[j];
+					for (int numSymFollow = 0; numSymFollow < followSets[followSetIndex].right.size(); numSymFollow++)
+					{
+						std::string nt = followSets[followSetIndex].left.kind;
+						std::string t = followSets[followSetIndex].right[numSymFollow].kind;
+
+						parsingTable[nt][t] = regularExpressions[regularExprIndex].right[numRight];
+					}
+				}
 			}
 		}
 	}
@@ -457,7 +493,14 @@ int main()
 		std::cout << i.first << ": { ";
 		for (auto j : i.second)
 		{
-			std::cout << j.first << ' ';
+			if (j.first == "")
+			{
+				std::cout << "$" << ' ';
+			}
+			else
+			{
+				std::cout << j.first << ' ';
+			}
 		}
 		std::cout << "} -> ";
 		for (auto j : i.second)
@@ -465,7 +508,14 @@ int main()
 			std::cout << "{ ";
 			for (auto k : j.second)
 			{
-				std::cout << k.kind << ' ';
+				if (k.kind == "")
+				{
+					std::cout << "$" << ' ';
+				}
+				else
+				{
+					std::cout << k.kind << ' ';
+				}
 			}
 			std::cout << "} ";
 		}
