@@ -51,8 +51,7 @@ void insertSymbol(const Symbol &s, std::vector<Symbol> &result)
 
 bool findSymbol(const Symbol &s, const std::vector<Symbol> symbols)
 {
-	if (std::find_if(symbols.begin(), symbols.end(), 
-		[&s](const Symbol &a) {return a.kind == s.kind; }) != symbols.end())
+	if (std::find_if(symbols.begin(), symbols.end(), [&s](const Symbol &a) {return a.kind == s.kind; }) != symbols.end())
 	{
 		return true;
 	}
@@ -221,48 +220,24 @@ SymbolType stringToSymType(const std::string &type)
 	}
 }
 
-
-std::string next(const char **p)
-{
-begin:
-	switch (**p)
-	{
-	case ' ':
-	{
-		(*p)++;
-		goto begin;
-	}
-	break;
-	default:
-	{
-		const char *begin = *p;
-		while (**p && **p != ' ')
-		{
-			(*p)++;
-		}
-		const char *end = *p;
-
-		return std::string(begin, end - begin);
-	}
-	break;
-	}
-}
-
 RegularExpr parseRE(const std::string &line)
 {
-	const char *p = line.c_str();
+	std::stringstream ss {line};
+	std::string nt, type, kind = {};
+	std::string del = {};
 
-	std::string nt = next(&p);
-	assert("->" == next(&p));
+	ss >> nt;
+	ss >> del;
+	assert(del == "->");
 
 	std::vector<Symbol> block = {};
 	std::vector<std::vector<Symbol>> right = {};
 	bool hasEpsilon = false;
-	while (*p != '\0')
+	while (!ss.eof())
 	{
-		std::string type = next(&p);
+		ss >> type;
 		assert(type == "NT" || type == "T" || type == "SPECIAL");
-		std::string kind = next(&p);
+		ss >> kind;
 
 		if (kind == "epsilon")
 		{
@@ -298,20 +273,49 @@ int findRegularExpr(const Symbol &s)
 
 std::stack<Symbol> stack;
 
+std::string next(const char **p, size_t size)
+{
+begin:
+	switch (**p)
+	{
+	case ' ':
+	{
+		(*p)++;
+		goto begin;
+	}
+	break;
+	default:
+	{
+		const char *begin = *p;
+		while (**p && **p != ' ' && size--)
+		{
+			(*p)++;
+		}
+		const char *end = *p;
+
+		return std::string(begin, end - begin);
+	}
+	break;
+	}
+}
+
 int parseInput(const std::string &s, std::map<std::string, std::map<std::string, std::vector<Symbol>>> parsingTable)
 {
 	const char *p = s.c_str();
 
+	size_t len = 1;
 	while (!stack.empty())
 	{
-		std::string sym = next(&p);
-		p -= sym.length();
+		std::string sym = next(&p, len);
+		p -= len;
 
 		if (stack.top().kind == sym)
 		{
 			std::cout << "Matched symbols: " << sym << '\n';
-			p += sym.length();
+			p += len;
 			stack.pop();
+
+			len = 1;
 		}
 		else
 		{
@@ -322,7 +326,7 @@ int parseInput(const std::string &s, std::map<std::string, std::map<std::string,
 
 				for (int i = production.size() - 1; i >= 0; i--)
 				{
-					if (production[i].kind != "epsilon") // TODO: change later
+					if (production[i].kind != "epsilon")
 					{
 						stack.push(production[i]);
 					}
@@ -330,8 +334,8 @@ int parseInput(const std::string &s, std::map<std::string, std::map<std::string,
 			}
 			else
 			{
-				std::cout << "fatal: undefined parsing table entry\n";
-				return 1;
+				len++;
+				assert(len <= s.length());
 			}
 		}
 	}
