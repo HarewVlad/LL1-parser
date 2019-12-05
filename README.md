@@ -15,4 +15,5 @@ NT -> 'type' 'name' ...
 **A -> NT B NT C T ;**  
 **B -> T int SPECIAL | T char SPECIAL | T double SPECIAL | T float**  
 **C -> NT D NT C SPECIAL | T epsilon**  
-**D -> T a SPECIAL | T b SPECIAL | T c SPECIAL | T _**  
+**D -> T a SPECIAL | T b SPECIAL | T c SPECIAL | T __**  
+![](ex1.jpg)
