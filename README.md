@@ -10,4 +10,9 @@ NT -> 'type' 'name' ...
 **-See all of this stuff that's popped out**  
 **-Enter string to parse("exit" to stop)**  
 
-![](test.gif)
+![](test.gif)  
+**More examples:**  
+**A -> NT B NT C T ;**  
+**B -> T int SPECIAL | T char SPECIAL | T double SPECIAL | T float**  
+**C -> NT D NT C SPECIAL | T epsilon**  
+**D -> T a SPECIAL | T b SPECIAL | T c SPECIAL | T _**  
