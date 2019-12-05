@@ -11,7 +11,7 @@ NT -> 'type' 'name' ...
 **-Enter string to parse("exit" to stop)**  
 
 ![](test.gif)  
-**More examples:**  
+# More examples:  
 **A -> NT B NT C T ;**  
 **B -> T int SPECIAL | T char SPECIAL | T double SPECIAL | T float**  
 **C -> NT D NT C SPECIAL | T epsilon**  
