@@ -222,7 +222,7 @@ SymbolType stringToSymType(const std::string &type)
 
 RegularExpr parseRE(const std::string &line)
 {
-	std::stringstream ss {line};
+	std::stringstream ss{ line };
 	std::string nt, type, kind = {};
 	std::string del = {};
 
@@ -307,7 +307,10 @@ int parseInput(const std::string &s, std::map<std::string, std::map<std::string,
 	while (!stack.empty())
 	{
 		std::string sym = next(&p, len);
-		p -= len;
+		if (sym != "")
+		{
+			p -= len;
+		}
 
 		if (stack.top().kind == sym)
 		{
@@ -332,10 +335,19 @@ int parseInput(const std::string &s, std::map<std::string, std::map<std::string,
 					}
 				}
 			}
-			else
+			else if (*p != '\0')
 			{
 				len++;
-				assert(len <= s.length());
+				if (len > s.length())
+				{
+					std::cout << "fatal: undefined parsing table entry\n";
+					return 1;
+				}
+			}
+			else
+			{
+				std::cout << "fatal: undefined parsing table entry\n";
+				return 2;
 			}
 		}
 	}
@@ -529,7 +541,7 @@ int main()
 			std::cout << "}\n";
 		}
 	}
-	
+
 	// Parsing
 	{
 		std::cout << "Parsing:\nEnter strings to parse: (type 'exit' to stop)\n";
@@ -555,5 +567,5 @@ int main()
 			}
 		}
 	}
-	
+
 }
