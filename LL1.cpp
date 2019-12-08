@@ -469,7 +469,7 @@ int main()
 		}
 	}
 
-	// Creating parsing table 
+	// Create parsing table 
 	std::map<std::string, std::map<std::string, std::vector<Symbol>>> parsingTable = {};
 	{
 		for (int numSet = 0; numSet < firstSets.size(); numSet++)
@@ -538,7 +538,7 @@ int main()
 				}
 				std::cout << "} ";
 			}
-			std::cout << "}\n";
+			std::cout << '\n';
 		}
 	}
 
