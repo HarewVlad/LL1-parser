@@ -128,7 +128,7 @@ struct FollowSet
 
 void follow(const Symbol &s, std::vector<Symbol> &result);
 
-void followE(const Symbol &left, const std::vector<Symbol> &right, int pos, std::vector<Symbol> &result)
+void followA(const Symbol &left, const std::vector<Symbol> &right, int pos, std::vector<Symbol> &result)
 {
 	if (pos + 1 < right.size())
 	{
@@ -165,7 +165,7 @@ void followE(const Symbol &left, const std::vector<Symbol> &right, int pos, std:
 
 			if (hasEpsilon)
 			{
-				followE(left, right, pos + 1, result);
+				followA(left, right, pos + 1, result);
 			}
 		}
 	}
