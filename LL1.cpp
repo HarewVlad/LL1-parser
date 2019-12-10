@@ -40,15 +40,6 @@ struct FirstSet
 	bool hasEpsilon;
 };
 
-void insertSymbol(const Symbol &s, std::vector<Symbol> &result)
-{
-	if (std::find_if(result.begin(), result.end(),
-		[&s](const Symbol &a) {return a.kind == s.kind; }) == result.end())
-	{
-		result.push_back(s);
-	}
-}
-
 bool findSymbol(const Symbol &s, const std::vector<Symbol> symbols)
 {
 	if (std::find_if(symbols.begin(), symbols.end(), [&s](const Symbol &a) {return a.kind == s.kind; }) != symbols.end())
@@ -56,6 +47,14 @@ bool findSymbol(const Symbol &s, const std::vector<Symbol> symbols)
 		return true;
 	}
 	return false;
+}
+
+void insertSymbol(const Symbol &s, std::vector<Symbol> &result)
+{
+	if (!findSymbol(s, result))
+	{
+		result.push_back(s);
+	}
 }
 
 void firstA(const std::vector<Symbol> &block, std::vector<Symbol> &result);
@@ -145,8 +144,7 @@ void followE(const Symbol &left, const std::vector<Symbol> &right, int pos, std:
 			bool hasEpsilon = false;
 			for (int i = 0; i < firstSet.size(); i++)
 			{
-				if (std::find_if(firstSet[i].begin(), firstSet[i].end(),
-					[](const Symbol &a) {return a.kind == "epsilon"; }) != firstSet[i].end())
+				if (findSymbol(Symbol{T, "epsilon"}, firstSet[i]))
 				{
 					hasEpsilon = true;
 					break;
@@ -159,7 +157,7 @@ void followE(const Symbol &left, const std::vector<Symbol> &right, int pos, std:
 				{
 					if (firstSet[i][j].kind != "epsilon" && !findSymbol(firstSet[i][j], result))
 					{
-						insertSymbol(firstSet[i][j], result);
+						result.push_back(firstSet[i][j]);
 					}
 				}
 
