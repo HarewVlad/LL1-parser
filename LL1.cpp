@@ -191,7 +191,7 @@ void follow(const Symbol &s, std::vector<Symbol> &result)
 				if (regularExpressions[i].right[j][k].kind == s.kind
 					&& regularExpressions[i].left.kind != s.kind)
 				{
-					followE(regularExpressions[i].left, regularExpressions[i].right[j], k, result);
+					followA(regularExpressions[i].left, regularExpressions[i].right[j], k, result);
 				}
 			}
 		}
