@@ -444,7 +444,7 @@ int main()
 		{
 			std::vector<Symbol> followSet = {};
 			follow(regularExpressions[i].left, followSet);
-			followSets.emplace_back(FollowSet{ regularExpressions[i].left, followSet });
+			followSets.push_back(FollowSet{ regularExpressions[i].left, followSet });
 		}
 
 		// Print
