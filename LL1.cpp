@@ -249,7 +249,7 @@ RegularExpr parseRE(const std::string &line)
 
 		if (kind != "|")
 		{
-			block.emplace_back(Symbol{ stringToSymType(type), kind });
+			block.push_back(Symbol{ stringToSymType(type), kind });
 		}
 	}
 	right.push_back(block);
@@ -416,7 +416,7 @@ int main()
 		{
 			std::vector<std::vector<Symbol>> firstSet = {};
 			first(regularExpressions[i].left, firstSet);
-			firstSets.emplace_back(FirstSet{ regularExpressions[i].left, firstSet });
+			firstSets.push_back(FirstSet{ regularExpressions[i].left, firstSet });
 		}
 
 		// Print
