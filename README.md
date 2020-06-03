@@ -5,7 +5,7 @@ SPECIAL - special
 
 **Format:**
 NT -> 'type' 'name' ...  
-**Ex:**  
+**Ex:**
 "S -> NT F SPECIAL | T epsilon" --- "S -> F | epsilon"  
 # How to use:  
 **-Enter regular expression("exit" to stop)**  
