@@ -4,7 +4,7 @@
 NT - non terminal  
 T - terminal  
 SPECIAL - special  
-NT -> 'type' 'name' ...
+NT -> 'type' 'name' ...  
 **Ex:**  
 "S -> NT F SPECIAL | T epsilon" --- "S -> F | epsilon"  
 # How to use:  
