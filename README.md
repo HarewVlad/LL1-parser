@@ -1,9 +1,9 @@
 # LL1-parser
 
 **Format:**
-NT - non terminal
-T - terminal
-SPECIAL - special
+NT - non terminal  
+T - terminal  
+SPECIAL - special  
 NT -> 'type' 'name' ...
 **Ex:**  
 "S -> NT F SPECIAL | T epsilon" --- "S -> F | epsilon"  
